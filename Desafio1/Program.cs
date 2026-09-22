@@ -19,6 +19,7 @@
                 Console.WriteLine("4. Listar Todas as Contas");
                 Console.WriteLine("5. Realizar Depósito");
                 Console.WriteLine("6. Realizar Saque");
+                Console.WriteLine("7. Aplicar Rendimento na Poupança");
                 Console.WriteLine("0. Sair");
                 Console.WriteLine("====================================");
                 Console.Write("Escolha uma opção: ");
@@ -46,6 +47,9 @@
                             break;
                         case "6":
                             Sacar(banco);
+                            break;
+                        case "7":
+                            AplicarRendimentoPoupanca(banco);
                             break;
                         case "0":
                             executando = false;
@@ -211,6 +215,50 @@
 
                 return numero; // Número é válido e não está duplicado!
             }
+        }
+
+        static void AplicarRendimentoPoupanca(List<ContaBancaria> banco)
+        {
+            Console.WriteLine("\n--- APLICAR RENDIMENTO NA POUPANÇA ---");
+            Console.Write("Digite o número da Conta Poupança: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int numero))
+            {
+                Console.WriteLine("[Erro]: Número de conta inválido!");
+                Pausar();
+                return;
+            }
+
+            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
+
+            if (conta == null)
+            {
+                Console.WriteLine("[Erro]: Conta não encontrada!");
+            }
+            else if (conta is ContaPoupanca poupanca)
+            {
+                Console.Write("Digite a taxa de rendimento (%): ");
+                if (decimal.TryParse(Console.ReadLine(), out decimal percentual))
+                {
+                    try
+                    {
+                        poupanca.AplicarRendimento(percentual);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Erro ao aplicar rendimento]: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("[Erro]: Digite um valor percentual válido!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[Erro]: Esta conta não é uma Conta Poupança!");
+            }
+            Pausar();
         }
 
 

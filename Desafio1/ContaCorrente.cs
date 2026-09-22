@@ -8,6 +8,7 @@ namespace Desafio1
     {
         public decimal TaxaSaque { get; private set; } = 2.50m;
 
+
         public ContaCorrente(int numeroConta, string titular, decimal saldoInicial)
             : base(numeroConta, titular, saldoInicial) { }
 

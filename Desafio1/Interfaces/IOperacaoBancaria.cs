@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Desafio1
+namespace Desafio1.Interfaces
 {
     public interface IOperacaoBancaria
     {
