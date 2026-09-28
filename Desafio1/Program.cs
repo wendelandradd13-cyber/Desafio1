@@ -20,6 +20,7 @@
                 Console.WriteLine("5. Realizar Depósito");
                 Console.WriteLine("6. Realizar Saque");
                 Console.WriteLine("7. Aplicar Rendimento na Poupança");
+                Console.WriteLine("8. Solicitar Empréstimo (Empresarial)");
                 Console.WriteLine("0. Sair");
                 Console.WriteLine("====================================");
                 Console.Write("Escolha uma opção: ");
@@ -50,6 +51,9 @@
                             break;
                         case "7":
                             AplicarRendimentoPoupanca(banco);
+                            break;
+                        case "8":
+                            RealizarEmprestimo(banco);
                             break;
                         case "0":
                             executando = false;
@@ -97,7 +101,7 @@
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA POUPANÇA ---");
 
-            
+
             int numero = LerNumeroContaValido(banco);
 
             Console.Write("Titular: ");
@@ -115,7 +119,7 @@
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA EMPRESARIAL ---");
 
-            
+
             int numero = LerNumeroContaValido(banco);
 
             Console.Write("Titular (Nome da Empresa): ");
@@ -261,7 +265,49 @@
             Pausar();
         }
 
+        static void RealizarEmprestimo(List<ContaBancaria> banco)
+        {
+            Console.WriteLine("\n--- REALIZAR EMPRÉSTIMO ---");
+            Console.Write("Digite o número da Conta: ");
+            if (!int.TryParse(Console.ReadLine(), out int numero))
+            {
+                Console.WriteLine("[Erro]: Número de conta inválido!");
+                Pausar();
+                return;
+            }
+            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
+            if (conta == null)
+            {
+                Console.WriteLine("[Erro]: Conta não encontrada!");
+            }
+            else if (conta is ContaEmpresarial empresarial)
+            {
+                Console.WriteLine($"Limite disponível para empréstimo: R$ {empresarial.LimiteEmprestimo:F2}\n");
+                Console.Write("Digite o valor do empréstimo: R$ ");
 
+                if (decimal.TryParse(Console.ReadLine(), out decimal valor))
+                {
+                    try
+                    {
+                        empresarial.RealizarEmprestimo(valor);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Erro ao realizar empréstimo]: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("[Erro]: Digite um valor válido para o empréstimo!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[Erro]: Esta conta não é uma Conta Empresarial!");
+            }
+            Pausar();
+
+        }
     }
 
 }
