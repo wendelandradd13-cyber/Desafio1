@@ -1,4 +1,7 @@
-﻿namespace Desafio1
+﻿using System;
+using System.Collections.Generic;
+
+namespace Desafio1
 {
     internal class Program
     {
@@ -11,16 +14,13 @@
             {
                 Console.Clear();
                 Console.WriteLine("====================================");
-                Console.WriteLine("    SISTEMA BANCÁRIO     ");
+                Console.WriteLine("       SISTEMA BANCÁRIO            ");
                 Console.WriteLine("====================================");
                 Console.WriteLine("1. Cadastrar Conta Corrente");
                 Console.WriteLine("2. Cadastrar Conta Poupança");
                 Console.WriteLine("3. Cadastrar Conta Empresarial");
                 Console.WriteLine("4. Listar Todas as Contas");
-                Console.WriteLine("5. Realizar Depósito");
-                Console.WriteLine("6. Realizar Saque");
-                Console.WriteLine("7. Aplicar Rendimento na Poupança");
-                Console.WriteLine("8. Solicitar Empréstimo (Empresarial)");
+                Console.WriteLine("5. Acessar uma Conta"); // MENU GERENCIAL
                 Console.WriteLine("0. Sair");
                 Console.WriteLine("====================================");
                 Console.Write("Escolha uma opção: ");
@@ -44,16 +44,7 @@
                             ListarContas(banco);
                             break;
                         case "5":
-                            Depositar(banco);
-                            break;
-                        case "6":
-                            Sacar(banco);
-                            break;
-                        case "7":
-                            AplicarRendimentoPoupanca(banco);
-                            break;
-                        case "8":
-                            RealizarEmprestimo(banco);
+                            AcessarConta(banco); // Abre o menu da conta específica
                             break;
                         case "0":
                             executando = false;
@@ -78,13 +69,138 @@
             }
         }
 
+        // --- SUBMENU OPERACIONAL DA CONTA ---
+
+        static void AcessarConta(List<ContaBancaria> banco)
+        {
+            Console.Clear();
+            Console.WriteLine("=== ACESSAR CONTA ===");
+            Console.Write("Digite o número da conta: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int numero))
+            {
+                Console.WriteLine("[Erro]: Número de conta inválido!");
+                Pausar();
+                return;
+            }
+
+            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
+
+            if (conta == null)
+            {
+                Console.WriteLine("[Erro]: Conta não encontrada!");
+                Pausar();
+                return;
+            }
+
+            // Abre o menu com as opções exclusivas da conta encontrada
+            MenuOperacoesConta(conta);
+        }
+
+        static void MenuOperacoesConta(ContaBancaria conta)
+        {
+            bool noSubMenu = true;
+
+            while (noSubMenu)
+            {
+                Console.Clear();
+                Console.WriteLine("====================================");
+                Console.WriteLine($"  CONTA #{conta.NumeroConta} - {conta.Titular.ToUpper()}");
+                Console.WriteLine($"  Saldo Atual: R$ {conta.Saldo:F2}");
+
+                // Exibe informação de limite se for Conta Empresarial
+                if (conta is ContaEmpresarial emp)
+                {
+                    Console.WriteLine($"  Limite de Empréstimo: R$ {emp.LimiteEmprestimo:F2}");
+                }
+
+                Console.WriteLine("====================================");
+                Console.WriteLine("1. Realizar Depósito");
+                Console.WriteLine("2. Realizar Saque");
+
+                // Opções exclusivas renderizadas dinamicamente
+                if (conta is ContaPoupanca)
+                {
+                    Console.WriteLine("3. Aplicar Rendimento");
+                }
+                else if (conta is ContaEmpresarial)
+                {
+                    Console.WriteLine("3. Solicitar Empréstimo");
+                }
+
+                Console.WriteLine("0. Voltar ao Menu Principal");
+                Console.WriteLine("====================================");
+                Console.Write("Escolha uma operação: ");
+
+                string opcao = Console.ReadLine();
+
+                try
+                {
+                    switch (opcao)
+                    {
+                        case "1":
+                            Console.Write("\nDigite o valor do depósito: R$ ");
+                            decimal valDeposito = decimal.Parse(Console.ReadLine());
+                            conta.Depositar(valDeposito);
+                            Pausar();
+                            break;
+
+                        case "2":
+                            Console.Write("\nDigite o valor do saque: R$ ");
+                            decimal valSaque = decimal.Parse(Console.ReadLine());
+                            conta.Sacar(valSaque);
+                            Pausar();
+                            break;
+
+                        case "3":
+                            if (conta is ContaPoupanca poupanca)
+                            {
+                                Console.Write("\nDigite a taxa de rendimento (%): ");
+                                decimal percentual = decimal.Parse(Console.ReadLine());
+                                poupanca.AplicarRendimento(percentual);
+                            }
+                            else if (conta is ContaEmpresarial empresarial)
+                            {
+                                Console.Write("\nDigite o valor do empréstimo: R$ ");
+                                decimal valorEmprestimo = decimal.Parse(Console.ReadLine());
+                                empresarial.RealizarEmprestimo(valorEmprestimo);
+                            }
+                            else
+                            {
+                                Console.WriteLine("\nOpção inválida para Conta Corrente!");
+                            }
+                            Pausar();
+                            break;
+
+                        case "0":
+                            noSubMenu = false;
+                            break;
+
+                        default:
+                            Console.WriteLine("\nOpção inválida!");
+                            Pausar();
+                            break;
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("\n[Erro]: Digite um valor numérico válido!");
+                    Pausar();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"\n[Erro]: {ex.Message}");
+                    Pausar();
+                }
+            }
+        }
+
         // --- MÉTODOS AUXILIARES DO MENU ---
 
         static void CadastrarContaCorrente(List<ContaBancaria> banco)
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA CORRENTE ---");
-            Console.Write("Número da Conta: ");
-            int numero = int.Parse(Console.ReadLine());
+            int numero = LerNumeroContaValido(banco);
 
             Console.Write("Titular: ");
             string titular = Console.ReadLine();
@@ -100,8 +216,6 @@
         static void CadastrarContaPoupanca(List<ContaBancaria> banco)
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA POUPANÇA ---");
-
-
             int numero = LerNumeroContaValido(banco);
 
             Console.Write("Titular: ");
@@ -118,8 +232,6 @@
         static void CadastrarContaEmpresarial(List<ContaBancaria> banco)
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA EMPRESARIAL ---");
-
-
             int numero = LerNumeroContaValido(banco);
 
             Console.Write("Titular (Nome da Empresa): ");
@@ -153,46 +265,6 @@
             Pausar();
         }
 
-        static void Depositar(List<ContaBancaria> banco)
-        {
-            Console.Write("\nDigite o número da conta para depósito: ");
-            int numero = int.Parse(Console.ReadLine());
-
-            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
-
-            if (conta == null)
-            {
-                Console.WriteLine("Conta não encontrada!");
-            }
-            else
-            {
-                Console.Write("Digite o valor do depósito: R$ ");
-                decimal valor = decimal.Parse(Console.ReadLine());
-                conta.Depositar(valor);
-            }
-            Pausar();
-        }
-
-        static void Sacar(List<ContaBancaria> banco)
-        {
-            Console.Write("\nDigite o número da conta para saque: ");
-            int numero = int.Parse(Console.ReadLine());
-
-            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
-
-            if (conta == null)
-            {
-                Console.WriteLine("Conta não encontrada!");
-            }
-            else
-            {
-                Console.Write("Digite o valor do saque: R$ ");
-                decimal valor = decimal.Parse(Console.ReadLine());
-                conta.Sacar(valor);
-            }
-            Pausar();
-        }
-
         static void Pausar()
         {
             Console.WriteLine("\nPressione ENTER para continuar...");
@@ -210,104 +282,14 @@
                     continue;
                 }
 
-                // Verifica se já existe alguma conta na lista com esse mesmo número
                 if (banco.Exists(c => c.NumeroConta == numero))
                 {
                     Console.WriteLine($"[Erro]: Já existe uma conta cadastrada com o número {numero}! Tente outro.");
                     continue;
                 }
 
-                return numero; // Número é válido e não está duplicado!
+                return numero;
             }
-        }
-
-        static void AplicarRendimentoPoupanca(List<ContaBancaria> banco)
-        {
-            Console.WriteLine("\n--- APLICAR RENDIMENTO NA POUPANÇA ---");
-            Console.Write("Digite o número da Conta Poupança: ");
-
-            if (!int.TryParse(Console.ReadLine(), out int numero))
-            {
-                Console.WriteLine("[Erro]: Número de conta inválido!");
-                Pausar();
-                return;
-            }
-
-            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
-
-            if (conta == null)
-            {
-                Console.WriteLine("[Erro]: Conta não encontrada!");
-            }
-            else if (conta is ContaPoupanca poupanca)
-            {
-                Console.Write("Digite a taxa de rendimento (%): ");
-                if (decimal.TryParse(Console.ReadLine(), out decimal percentual))
-                {
-                    try
-                    {
-                        poupanca.AplicarRendimento(percentual);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[Erro ao aplicar rendimento]: {ex.Message}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("[Erro]: Digite um valor percentual válido!");
-                }
-            }
-            else
-            {
-                Console.WriteLine("[Erro]: Esta conta não é uma Conta Poupança!");
-            }
-            Pausar();
-        }
-
-        static void RealizarEmprestimo(List<ContaBancaria> banco)
-        {
-            Console.WriteLine("\n--- REALIZAR EMPRÉSTIMO ---");
-            Console.Write("Digite o número da Conta: ");
-            if (!int.TryParse(Console.ReadLine(), out int numero))
-            {
-                Console.WriteLine("[Erro]: Número de conta inválido!");
-                Pausar();
-                return;
-            }
-            ContaBancaria conta = banco.Find(c => c.NumeroConta == numero);
-            if (conta == null)
-            {
-                Console.WriteLine("[Erro]: Conta não encontrada!");
-            }
-            else if (conta is ContaEmpresarial empresarial)
-            {
-                Console.WriteLine($"Limite disponível para empréstimo: R$ {empresarial.LimiteEmprestimo:F2}\n");
-                Console.Write("Digite o valor do empréstimo: R$ ");
-
-                if (decimal.TryParse(Console.ReadLine(), out decimal valor))
-                {
-                    try
-                    {
-                        empresarial.RealizarEmprestimo(valor);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[Erro ao realizar empréstimo]: {ex.Message}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("[Erro]: Digite um valor válido para o empréstimo!");
-                }
-            }
-            else
-            {
-                Console.WriteLine("[Erro]: Esta conta não é uma Conta Empresarial!");
-            }
-            Pausar();
-
         }
     }
-
 }
