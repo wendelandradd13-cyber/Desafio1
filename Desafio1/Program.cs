@@ -44,7 +44,7 @@ namespace Desafio1
                             ListarContas(banco);
                             break;
                         case "5":
-                            AcessarConta(banco); // Abre o menu da conta específica
+                            AcessarConta(banco);
                             break;
                         case "0":
                             executando = false;
@@ -55,11 +55,6 @@ namespace Desafio1
                             Console.ReadLine();
                             break;
                     }
-                }
-                catch (FormatException)
-                {
-                    Console.WriteLine("\n[Erro]: Digite um valor numérico válido!");
-                    Pausar();
                 }
                 catch (Exception ex)
                 {
@@ -93,7 +88,6 @@ namespace Desafio1
                 return;
             }
 
-            // Abre o menu com as opções exclusivas da conta encontrada
             MenuOperacoesConta(conta);
         }
 
@@ -108,7 +102,6 @@ namespace Desafio1
                 Console.WriteLine($"  CONTA #{conta.NumeroConta} - {conta.Titular.ToUpper()}");
                 Console.WriteLine($"  Saldo Atual: R$ {conta.Saldo:F2}");
 
-                // Exibe informação de limite se for Conta Empresarial
                 if (conta is ContaEmpresarial emp)
                 {
                     Console.WriteLine($"  Limite de Empréstimo: R$ {emp.LimiteEmprestimo:F2}");
@@ -118,7 +111,6 @@ namespace Desafio1
                 Console.WriteLine("1. Realizar Depósito");
                 Console.WriteLine("2. Realizar Saque");
 
-                // Opções exclusivas renderizadas dinamicamente
                 if (conta is ContaPoupanca)
                 {
                     Console.WriteLine("3. Aplicar Rendimento");
@@ -139,15 +131,13 @@ namespace Desafio1
                     switch (opcao)
                     {
                         case "1":
-                            Console.Write("\nDigite o valor do depósito: R$ ");
-                            decimal valDeposito = decimal.Parse(Console.ReadLine());
+                            decimal valDeposito = LerDecimalValido("\nDigite o valor do depósito: R$ ");
                             conta.Depositar(valDeposito);
                             Pausar();
                             break;
 
                         case "2":
-                            Console.Write("\nDigite o valor do saque: R$ ");
-                            decimal valSaque = decimal.Parse(Console.ReadLine());
+                            decimal valSaque = LerDecimalValido("\nDigite o valor do saque: R$ ");
                             conta.Sacar(valSaque);
                             Pausar();
                             break;
@@ -155,14 +145,12 @@ namespace Desafio1
                         case "3":
                             if (conta is ContaPoupanca poupanca)
                             {
-                                Console.Write("\nDigite a taxa de rendimento (%): ");
-                                decimal percentual = decimal.Parse(Console.ReadLine());
+                                decimal percentual = LerDecimalValido("\nDigite a taxa de rendimento (%): ");
                                 poupanca.AplicarRendimento(percentual);
                             }
                             else if (conta is ContaEmpresarial empresarial)
                             {
-                                Console.Write("\nDigite o valor do empréstimo: R$ ");
-                                decimal valorEmprestimo = decimal.Parse(Console.ReadLine());
+                                decimal valorEmprestimo = LerDecimalValido("\nDigite o valor do empréstimo: R$ ");
                                 empresarial.RealizarEmprestimo(valorEmprestimo);
                             }
                             else
@@ -182,11 +170,6 @@ namespace Desafio1
                             break;
                     }
                 }
-                catch (FormatException)
-                {
-                    Console.WriteLine("\n[Erro]: Digite um valor numérico válido!");
-                    Pausar();
-                }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"\n[Erro]: {ex.Message}");
@@ -201,12 +184,8 @@ namespace Desafio1
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA CORRENTE ---");
             int numero = LerNumeroContaValido(banco);
-
-            Console.Write("Titular: ");
-            string titular = Console.ReadLine();
-
-            Console.Write("Saldo Inicial: R$ ");
-            decimal saldo = decimal.Parse(Console.ReadLine());
+            string titular = LerTitularValido();
+            decimal saldo = LerDecimalValido("Saldo Inicial: R$ ");
 
             banco.Add(new ContaCorrente(numero, titular, saldo));
             Console.WriteLine("\nConta Corrente cadastrada com sucesso!");
@@ -217,12 +196,8 @@ namespace Desafio1
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA POUPANÇA ---");
             int numero = LerNumeroContaValido(banco);
-
-            Console.Write("Titular: ");
-            string titular = Console.ReadLine();
-
-            Console.Write("Saldo Inicial: R$ ");
-            decimal saldo = decimal.Parse(Console.ReadLine());
+            string titular = LerTitularValido();
+            decimal saldo = LerDecimalValido("Saldo Inicial: R$ ");
 
             banco.Add(new ContaPoupanca(numero, titular, saldo));
             Console.WriteLine("\nConta Poupança cadastrada com sucesso!");
@@ -233,15 +208,9 @@ namespace Desafio1
         {
             Console.WriteLine("\n--- CADASTRO DE CONTA EMPRESARIAL ---");
             int numero = LerNumeroContaValido(banco);
-
-            Console.Write("Titular (Nome da Empresa): ");
-            string titular = Console.ReadLine();
-
-            Console.Write("Saldo Inicial: R$ ");
-            decimal saldo = decimal.Parse(Console.ReadLine());
-
-            Console.Write("Limite de Empréstimo: R$ ");
-            decimal limite = decimal.Parse(Console.ReadLine());
+            string titular = LerTitularValido();
+            decimal saldo = LerDecimalValido("Saldo Inicial: R$ ");
+            decimal limite = LerDecimalValido("Limite de Empréstimo: R$ ");
 
             banco.Add(new ContaEmpresarial(numero, titular, saldo, limite));
             Console.WriteLine("\nConta Empresarial cadastrada com sucesso!");
@@ -289,6 +258,53 @@ namespace Desafio1
                 }
 
                 return numero;
+            }
+        }
+
+        static string LerTitularValido()
+        {
+            while (true)
+            {
+                Console.Write("Titular: ");
+                string entrada = Console.ReadLine()?.Trim();
+
+                if (string.IsNullOrWhiteSpace(entrada))
+                {
+                    Console.WriteLine("[Erro]: O nome do titular não pode ser vazio!");
+                    continue;
+                }
+
+                bool apenasLetras = true;
+                foreach (char c in entrada)
+                {
+                    if (!char.IsLetter(c) && !char.IsWhiteSpace(c))
+                    {
+                        apenasLetras = false;
+                        break;
+                    }
+                }
+
+                if (!apenasLetras)
+                {
+                    Console.WriteLine("[Erro]: O nome do titular não pode conter números ou símbolos!");
+                    continue;
+                }
+
+                return entrada;
+            }
+        }
+
+        static decimal LerDecimalValido(string mensagem)
+        {
+            while (true)
+            {
+                Console.Write(mensagem);
+                if (decimal.TryParse(Console.ReadLine(), out decimal valor) && valor >= 0)
+                {
+                    return valor;
+                }
+
+                Console.WriteLine("[Erro]: Digite um valor numérico válido e não negativo (Ex: 100,50)!");
             }
         }
     }
