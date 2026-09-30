@@ -13,17 +13,23 @@ namespace Desafio1
             while (executando)
             {
                 Console.Clear();
-                Console.WriteLine("====================================");
-                Console.WriteLine("       SISTEMA BANCÁRIO            ");
-                Console.WriteLine("====================================");
-                Console.WriteLine("1. Cadastrar Conta Corrente");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(@"
+██╗░░░██╗░█████╗░██╗░░░░░████████╗██████╗░░█████╗░███╗░░██╗██╗░░██╗
+██║░░░██║██╔══██╗██║░░░░░╚══██╔══╝██╔══██╗██╔══██╗████╗░██║██║░██╔╝
+╚██╗░██╔╝██║░░██║██║░░░░░░░░██║░░░██████╦╝███████║██╔██╗██║█████═╝░
+░╚████╔╝░██║░░██║██║░░░░░░░░██║░░░██╔══██╗██╔══██║██║╚████║██╔═██╗░
+░░╚██╔╝░░╚█████╔╝███████╗░░░██║░░░██████╦╝██║░░██║██║░╚███║██║░╚██╗
+░░░╚═╝░░░░╚════╝░╚══════╝░░░╚═╝░░░╚═════╝░╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝");
+                Console.ResetColor();
+                Console.WriteLine("\n1. Cadastrar Conta Corrente");
                 Console.WriteLine("2. Cadastrar Conta Poupança");
                 Console.WriteLine("3. Cadastrar Conta Empresarial");
                 Console.WriteLine("4. Listar Todas as Contas");
                 Console.WriteLine("5. Acessar uma Conta"); // MENU GERENCIAL
                 Console.WriteLine("0. Sair");
                 Console.WriteLine("====================================");
-                Console.Write("Escolha uma opção: ");
+                Console.Write("\nEscolha uma opção: ");
 
                 string opcao = Console.ReadLine();
 
