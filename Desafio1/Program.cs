@@ -8,6 +8,12 @@ namespace Desafio1
         static void Main(string[] args)
         {
             List<ContaBancaria> banco = new List<ContaBancaria>();
+
+            // Contas de Exemplo / Dados Iniciais de Teste
+            banco.Add(new ContaCorrente(1001, "Maria", 1500.00m));
+            banco.Add(new ContaPoupanca(1002, "Cauã", 3200.50m));
+            banco.Add(new ContaEmpresarial(1003, "Anderson", 50000.00m, 20000.00m));
+
             bool executando = true;
 
             while (executando)
